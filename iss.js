@@ -29,4 +29,34 @@ const fetchMyIP = function(callback) {
   });
 };
 
-module.exports = { fetchMyIP };
+// https://freegeoip.app/{format}/{IP_or_hostname}
+// https://freegeoip.app/json/198.52.129.216
+
+const fetchCoordsByIP = (ip, callback) => {
+  let url = 'https://freegeoip.app/json/' + ip;
+  request(url, (error, response, body) => {
+    // inside the request callback ...
+    // error can be set if invalid domain, user is offline, etc.
+    if (error) {
+      callback(error, null);
+      return;
+    }
+    // if non-200 status, assume server error
+    if (response.statusCode !== 200) {
+      const msg = `Status Code ${response.statusCode}. Response: ${body}`;
+      callback(Error(msg), null);
+      return;
+    }
+    const data = JSON.parse(body);
+    // const { latitude, longitude } = data; shorthand notation works
+    const result = {};
+    result.latitude = data.latitude;
+    result.longitude = data.longitude;
+    callback(null, result);
+  });
+};
+
+module.exports = {
+  fetchMyIP,
+  fetchCoordsByIP
+};
